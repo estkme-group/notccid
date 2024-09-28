@@ -1,0 +1,48 @@
+{
+  "name": "@estkme-group/notccid",
+  "version": "0.0.0",
+  "repository": "https://github.com/estkme-group/notccid.git",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./esm/index.d.ts",
+        "default": "./esm/index.js"
+      },
+      "require": {
+        "types": "./cjs/index.d.ts",
+        "default": "./cjs/index.js"
+      }
+    }
+  },
+  "main": "./cjs/index.js",
+  "module": "./esm/index.js",
+  "types": "./esm/index.d.ts",
+  "workspaces": [
+    "examples"
+  ],
+  "scripts": {
+    "examples": "npm start --workspace examples",
+    "prepublishOnly": "npm run build",
+    "publish-to-github": "npm publish --registry=https://npm.pkg.github.com",
+    "test": "mocha",
+    "watch": "tsc --watch",
+    "build": "run-s clean && run-p build:*",
+    "clean": "rimraf esm cjs",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build:esm": "tsc --project tsconfig.esm.json"
+  },
+  "devDependencies": {
+    "@types/chai": "~5.0.0",
+    "@types/mocha": "~10.0.9",
+    "@types/w3c-web-usb": "^1.0.10",
+    "@types/web-bluetooth": "^0.0.20",
+    "chai": "^5.1.1",
+    "mocha": "^10.7.3",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

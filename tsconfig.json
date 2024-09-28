@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "ts-node": {
+    "experimentalSpecifierResolution": "node"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["examples/**/*"]
+}

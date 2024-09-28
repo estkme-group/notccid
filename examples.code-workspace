@@ -1,0 +1,12 @@
+{
+  "folders": [
+    { "name": "NotCCID", "path": "." },
+    { "name": "NotCCID (Examples)", "path": "examples" }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always"
+    }
+  }
+}

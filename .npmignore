@@ -1,0 +1,7 @@
+/examples
+/docs
+/dist
+/src/**/*.spec.ts
+/.*
+/*.code-workspace
+/tsconfig*
