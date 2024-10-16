@@ -1,5 +1,5 @@
 import { FC, useCallback, useMemo, useState } from 'react'
-import { Button, Col, Form, InputGroup, Row, Stack } from 'react-bootstrap'
+import { Button, Form, InputGroup, Stack } from 'react-bootstrap'
 import { ManagedNotCCID } from '../ManagedNotCCID'
 
 interface Props {
