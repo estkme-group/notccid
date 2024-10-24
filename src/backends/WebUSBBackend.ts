@@ -18,7 +18,9 @@ export class WebUSBBackend implements Backend {
   }
 
   static async getAvailability(usb = navigator.usb) {
-    return usb !== undefined
+    if (usb === undefined || usb === null) return false
+    if (typeof usb.requestDevice !== 'function') return false
+    return true
   }
 
   static async open(device: USBDevice, options?: WebUSBBackend.Options): Promise<WebUSBBackend> {

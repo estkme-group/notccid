@@ -27,8 +27,9 @@ export class WebBLEBackend implements EventListenerObject, Backend {
   }
 
   static async getAvailability(bluetooth = navigator.bluetooth) {
-    if (!bluetooth) return false
-    if (!('getAvailability' in bluetooth)) return false
+    if (bluetooth === undefined || bluetooth === null) return false
+    if (typeof bluetooth.requestDevice !== 'function') return false
+    if (typeof bluetooth.getAvailability !== 'function') return true
     return bluetooth.getAvailability()
   }
 
