@@ -21,15 +21,15 @@ export class WebBLEBackend implements EventListenerObject, Backend {
     }
   }
 
-  static async requestDevice() {
+  static async requestDevice(bluetooth = navigator.bluetooth) {
     if (!(await this.getAvailability())) throw new Error('WebBLE is not available')
-    return navigator.bluetooth.requestDevice(this.getRequestOptions())
+    return bluetooth.requestDevice(this.getRequestOptions())
   }
 
-  static async getAvailability() {
-    if (!('bluetooth' in navigator)) return false
-    if (!('getAvailability' in navigator.bluetooth)) return false
-    return navigator.bluetooth.getAvailability()
+  static async getAvailability(bluetooth = navigator.bluetooth) {
+    if (!bluetooth) return false
+    if (!('getAvailability' in bluetooth)) return false
+    return bluetooth.getAvailability()
   }
 
   static async open(device: BluetoothDevice, options?: WebBLEBackend.Options): Promise<WebBLEBackend> {

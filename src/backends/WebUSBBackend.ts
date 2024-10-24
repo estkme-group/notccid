@@ -7,9 +7,9 @@ const CHUNK_SIZE = 2 << 13 // 16 KiB
 export class WebUSBBackend implements Backend {
   private readonly abortController = new AbortController()
 
-  static async requestDevice() {
-    if (!(await this.getAvailability())) throw new Error('WebUSB is not available')
-    return navigator.usb.requestDevice({
+  static async requestDevice(usb = navigator.usb) {
+    if (usb === undefined) throw new Error('WebUSB is not available')
+    return usb.requestDevice({
       filters: [
         // ESTKme-RED (10/2024)
         { productId: 0x0165, vendorId: 0x0bda, classCode: 0xff },
@@ -17,8 +17,8 @@ export class WebUSBBackend implements Backend {
     })
   }
 
-  static async getAvailability() {
-    return 'usb' in navigator
+  static async getAvailability(usb = navigator.usb) {
+    return usb !== undefined
   }
 
   static async open(device: USBDevice, options?: WebUSBBackend.Options): Promise<WebUSBBackend> {
