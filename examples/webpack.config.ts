@@ -4,9 +4,16 @@ import HTMLPlugin from 'html-webpack-plugin'
 import CSSPlugin from 'mini-css-extract-plugin'
 import TSConfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 
+const MAIN_ENTRY = 'main'
+const RECOVERY_ENTRY = 'recovery'
+
 const configuration: Configuration = {
   context: __dirname,
   devtool: 'source-map',
+  entry: {
+    [MAIN_ENTRY]: require.resolve('./src/index.tsx'),
+    [RECOVERY_ENTRY]: require.resolve('./src/recovery.tsx'),
+  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
     plugins: [new TSConfigPathsPlugin()],
@@ -33,7 +40,14 @@ const configuration: Configuration = {
   plugins: [
     new CSSPlugin(),
     new HTMLPlugin({
+      filename: 'index.html',
       title: 'NotCCID Example',
+      chunks: [MAIN_ENTRY],
+    }),
+    new HTMLPlugin({
+      filename: 'recovery.html',
+      title: 'ESTKme-RED Recovery Tools',
+      chunks: [RECOVERY_ENTRY],
     }),
   ],
 }

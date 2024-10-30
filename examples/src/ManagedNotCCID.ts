@@ -88,8 +88,6 @@ export function useManagedNotCCID(backend: Backend | undefined): ManagedNotCCID 
     },
     async enterRecoveryMode() {
       if (!notccid) throw new Error('Not connected')
-      if (!claimed) throw new Error('Not claimed')
-      if (atr === undefined) throw new Error('Card not powered')
       await notccid.enterRecoveryMode()
     },
   }
