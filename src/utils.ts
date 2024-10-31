@@ -24,3 +24,20 @@ export function equals(a: Uint8Array, b: Uint8Array) {
   }
   return true
 }
+
+export function anySignals(...signals: Array<AbortSignal | undefined>) {
+  return AbortSignal.any(signals.filter((signal) => signal !== undefined))
+}
+
+export async function racePromise<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  let abort: VoidFunction | undefined
+  try {
+    return await new Promise((resolve, reject) => {
+      abort = reject.bind(null, signal.reason)
+      signal.addEventListener('abort', abort)
+      promise.then(resolve, reject)
+    })
+  } finally {
+    if (abort) signal.removeEventListener('abort', abort)
+  }
+}

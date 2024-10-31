@@ -1,6 +1,6 @@
 /// <reference types="@types/w3c-web-usb" />
 import type { Backend } from '../types'
-import { equals, getUint16 } from '../utils'
+import { anySignals, equals, getUint16, racePromise } from '../utils'
 
 const CHUNK_SIZE = 2 << 13 // 16 KiB
 
@@ -46,14 +46,15 @@ export class WebUSBBackend implements Backend {
     }
   }
 
-  async invoke(request: Uint8Array): Promise<Uint8Array> {
+  async invoke(request: Uint8Array, options?: Backend.InvokeOptions): Promise<Uint8Array> {
+    const signal = anySignals(this.abortController.signal, options?.signal)
     // transmit request
-    await this.write(0x00, request)
-    const readback = await this.read(0x01, request.byteLength)
+    await this.write(0x00, request, signal)
+    const readback = await this.read(0x01, request.byteLength, signal)
     if (!equals(request, readback)) throw new Error('The request is mismatched')
     // receive response
-    const length = getUint16(await this.read(0x02, 2), 0)
-    return await this.read(0x03, length)
+    const length = getUint16(await this.read(0x02, 2, signal), 0)
+    return await this.read(0x03, length, signal)
   }
 
   async close(options?: Backend.CloseOptions) {
@@ -77,7 +78,7 @@ export class WebUSBBackend implements Backend {
     return `WebUSB:${this.device.serialNumber}`
   }
 
-  private async read(request: number, length: number): Promise<Uint8Array> {
+  private async read(request: number, length: number, signal: AbortSignal): Promise<Uint8Array> {
     let chunkSize: number
     let result: USBInTransferResult
     const setup: USBControlTransferParameters = {
@@ -89,9 +90,8 @@ export class WebUSBBackend implements Backend {
     }
     const payload = new Uint8Array(length)
     while (setup.value < length) {
-      this.abortController.signal.throwIfAborted()
       chunkSize = Math.min(this.chunkSize, length - setup.value)
-      result = await this.device.controlTransferIn(setup, chunkSize)
+      result = await racePromise(this.device.controlTransferIn(setup, chunkSize), signal)
       if (result.status !== 'ok' || !result.data) throw new Error(`Failed to read packet: ${result.status}`)
       payload.set(new Uint8Array(result.data.buffer), setup.value)
       setup.value += result.data.byteLength
@@ -99,7 +99,7 @@ export class WebUSBBackend implements Backend {
     return payload
   }
 
-  private async write(request: number, packet: Uint8Array) {
+  private async write(request: number, packet: Uint8Array, signal: AbortSignal) {
     let chunk: Uint8Array
     let result: USBOutTransferResult
     const setup: USBControlTransferParameters = {
@@ -110,9 +110,8 @@ export class WebUSBBackend implements Backend {
       index: 1,
     }
     while (setup.value < packet.byteLength) {
-      this.abortController.signal.throwIfAborted()
       chunk = packet.slice(setup.value, setup.value + this.chunkSize)
-      result = await this.device.controlTransferOut(setup, chunk)
+      result = await racePromise(this.device.controlTransferOut(setup, chunk), signal)
       if (result.status !== 'ok') throw new Error(`Failed to write packet: ${result.status}`)
       setup.value += result.bytesWritten
     }

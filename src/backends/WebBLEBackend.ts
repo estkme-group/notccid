@@ -1,6 +1,6 @@
 /// <reference types="@types/web-bluetooth" />
 import type { Backend } from '../types'
-import { getUint16 } from '../utils'
+import { anySignals, getUint16, racePromise } from '../utils'
 
 const CHUNK_SIZE = 2 << 6 // 128 bytes
 const NAME_PREFIX = 'ESTKme-RED'
@@ -60,7 +60,7 @@ export class WebBLEBackend implements EventListenerObject, Backend {
 
   handleEvent(event: Event): void {
     if (event.type === 'gattserverdisconnected') {
-      this.abortController.abort('discoonnect')
+      this.abortController.abort(new Error('discoonnect'))
     }
   }
 
@@ -77,14 +77,15 @@ export class WebBLEBackend implements EventListenerObject, Backend {
     return this.service.device
   }
 
-  async invoke(request: Uint8Array) {
-    await this.tx.writeValue(request, this.chunkSize)
-    return await this.rx
+  async invoke(request: Uint8Array, options?: Backend.InvokeOptions) {
+    const signal = anySignals(this.abortController.signal, options?.signal)
+    await racePromise(this.tx.writeValue(request, this.chunkSize), signal)
+    return await racePromise(new Promise(this.rx.then.bind(this.rx)), signal)
   }
 
   async close(options?: Backend.CloseOptions) {
     this.service.device.removeEventListener('gattserverdisconnected', this)
-    this.abortController.abort('close')
+    this.abortController.abort(new Error('close'))
     await this.tx.close()
     await this.rx.close()
     if (this.gatt?.connected) this.gatt.disconnect()
