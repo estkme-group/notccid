@@ -1,8 +1,8 @@
 import { Backend, ConsoleBackend } from '@estkme-group/notccid'
 import { FC, useCallback, useMemo, useState } from 'react'
 import { Button, Col, Container, Form, Row, Stack } from 'react-bootstrap'
-import { useManagedNotCCID } from 'src/ManagedNotCCID'
-import { MutexBackend } from 'src/MutexBackend'
+import { useManagedNotCCID } from '../ManagedNotCCID'
+import { MutexBackend } from '../MutexBackend'
 import { Connect } from './Connect'
 
 export const Entry: FC = () => {
@@ -17,6 +17,8 @@ export const Entry: FC = () => {
   const managed = useManagedNotCCID(wrappedBackend)
   const handleRecoveryMode = useCallback(async () => {
     if (!managed) return
+    await managed.claim()
+    await managed.powerOnCard()
     await managed.enterRecoveryMode()
   }, [managed])
   return (
